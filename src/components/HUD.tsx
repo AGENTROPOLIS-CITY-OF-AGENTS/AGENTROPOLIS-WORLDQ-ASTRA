@@ -1,88 +1,78 @@
-import { Activity, Bot, CheckCircle2, CircleDollarSign, Cpu, FileCheck2, Gauge, Radio, RotateCcw, ShieldCheck, Waypoints } from 'lucide-react';
-import type { ExecutionEvent, MissionMetrics, QragStep } from '../lib/types';
+import { Activity, Radio, ShieldCheck } from 'lucide-react';
+import type { ExecutionEvent, MissionMetrics, WorldLayer } from '../lib/types';
 
-const qrag: { key: QragStep; label: string }[] = [
-  { key: 'retrieve', label: 'Retrieve' },
-  { key: 'evaluate', label: 'Evaluate' },
-  { key: 'execute', label: 'Execute' },
-  { key: 'verify', label: 'Verify' },
-  { key: 'requery', label: 'Re-query' },
+const layers: { key: WorldLayer; n: string; title: string; sub: string }[] = [
+  { key: 'ORBIT', n: '01', title: 'ORBIT', sub: 'ORBITAL INTELLIGENCE' },
+  { key: 'GLOBE', n: '02', title: 'GLOBE', sub: 'ATLAS' },
+  { key: 'WORLD_GRID', n: '03', title: 'WORLD GRID', sub: 'GOVERNANCE' },
+  { key: 'CITY', n: '04', title: 'CITY', sub: 'AGENTROPOLIS WORLD' },
+  { key: 'WORLDQ', n: '05', title: 'WORLDQ', sub: 'STREAM' },
 ];
 
-function Metric({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return <div className="metric"><div className="metric-icon">{icon}</div><div><strong>{value}</strong><span>{label}</span></div></div>;
+const copy: Record<WorldLayer, { code: string; title: string; body: string; tags: string; action: string }> = {
+  ORBIT: { code: '01 · ORBIT', title: 'Know what is happening above us.', body: 'Orbital intelligence for external signals, satellites, networks, and real-time systems.', tags: 'signals · satellites · feeds · events', action: 'SCAN ORBIT' },
+  GLOBE: { code: '02 · ATLAS', title: 'Know where.', body: 'Geospatial intelligence. ATLAS knows WHERE.', tags: 'Earth · geography · borders · routes · spatial provenance', action: 'EXPLORE THE WORLD' },
+  WORLD_GRID: { code: '03 · AGENTROPOLIS-WORLD-GRID', title: 'Know who governs there.', body: 'International governance and jurisdiction intelligence layer. WORLD GRID describes authority context. It does not grant execution permission.', tags: 'countries · governments · jurisdictions · regulators · treaties', action: 'INSPECT GOVERNANCE' },
+  CITY: { code: '04 · AGENTROPOLIS-WORLD', title: 'See what is happening inside Agentropolis.', body: 'The persistent city. Descent enters the existing AGENTROPOLIS world.', tags: 'city-state · districts · buildings · agents · civic state', action: 'OPEN DISTRICTS' },
+  WORLDQ: { code: '05 · WORLDQ', title: 'Watch agents execute.', body: 'The spatial execution stream. Human intent descends through mandate, policy, tools, verification, receipt, and audit.', tags: 'agents · execution · QRAG · receipts · audit', action: 'RUN ASTRA MISSION' },
+};
+
+function LayerRail({ selected, onSelect }: { selected: WorldLayer; onSelect: (layer: WorldLayer) => void }) {
+  return <nav className="layer-rail" aria-label="WORLDQ layers">{layers.map((layer) => (
+    <button key={layer.key} className={selected === layer.key ? 'active' : ''} onClick={() => onSelect(layer.key)}>
+      <span className="layer-num">{layer.n}</span><span><strong>{layer.title}</strong><small>{layer.sub}</small></span>
+    </button>
+  ))}</nav>;
 }
 
-export function HUD({ events, metrics, mode }: { events: ExecutionEvent[]; metrics: MissionMetrics; mode: 'live' | 'demo' }) {
+export function HUD({ events, metrics, mode, selectedLayer, onSelectLayer }: {
+  events: ExecutionEvent[];
+  metrics: MissionMetrics;
+  mode: 'live' | 'demo';
+  selectedLayer: WorldLayer;
+  onSelectLayer: (layer: WorldLayer) => void;
+}) {
   const latest = events.at(-1);
-  const activeStep = latest?.qragStep;
-  const totalCost = events.reduce((sum, e) => sum + (e.costUsd ?? 0), 0);
+  const current = copy[selectedLayer];
   const totalTokens = events.reduce((sum, e) => sum + (e.tokens ?? 0), 0);
+  const totalCost = events.reduce((sum, e) => sum + (e.costUsd ?? 0), 0);
 
-  return (
-    <div className="hud" aria-label="AGENTROPOLIS mission control">
-      <header className="topbar glass">
-        <div>
-          <div className="brand"><span>AGENT</span><b>ROPOLIS</b></div>
-          <div className="kicker">WORLDQ · SPATIAL EXECUTION OBSERVATORY</div>
-        </div>
-        <div className="status"><Radio size={16} /><span>{mode === 'live' ? 'LIVE AGENT STREAM' : 'DEMO STREAM'}</span></div>
-      </header>
+  return <div className="world-hud">
+    <header className="world-topbar">
+      <div className="brand-lockup"><div className="brand-mark">A</div><div><div className="brand"><span>AGENT</span><b>ROPOLIS</b></div><small>A CITY BUILT FOR AGENTS.</small></div></div>
+      <div className="world-heading"><strong>FROM CITY STREETS TO ORBITAL SPACE</strong><span>AGENTROPOLIS IS BEING BUILT AS ONE CONNECTED INTELLIGENCE CIVILIZATION.</span></div>
+      <div className="display-modes"><span>CALM</span><span>CONTRAST</span><span>DENSITY</span><span>FULL</span><b>ADAPT</b><span>LITE</span><span>MIN</span></div>
+    </header>
 
-      <section className="left-rail glass">
-        <div className="panel-title"><ShieldCheck size={18}/> EXECUTION ENVELOPE</div>
-        <p className="muted">Human mandate stays above agent action. Every tool call runs inside explicit scope, permission, budget, and retry bounds.</p>
-        <div className="metrics-grid">
-          <Metric icon={<Bot size={17}/>} value={String(metrics.activeAgents)} label="active agents" />
-          <Metric icon={<Activity size={17}/>} value={String(metrics.runningTasks)} label="running tasks" />
-          <Metric icon={<CheckCircle2 size={17}/>} value={`${(metrics.verifiedRate * 100).toFixed(1)}%`} label="verified" />
-          <Metric icon={<Gauge size={17}/>} value={`${metrics.avgLatencyMs}ms`} label="avg latency" />
-        </div>
-        <div className="divider" />
-        <div className="panel-title"><Waypoints size={18}/> ACTIVE MANDATE</div>
-        <div className="mandate">Inspect → reason → act → verify → receipt</div>
-        <div className="mini-row"><span>Token budget</span><strong>{totalTokens.toLocaleString()}</strong></div>
-        <div className="mini-row"><span>Observed cost</span><strong>${totalCost.toFixed(3)}</strong></div>
-        <div className="mini-row"><span>Receipts</span><strong>{metrics.receipts}</strong></div>
-      </section>
+    <LayerRail selected={selectedLayer} onSelect={onSelectLayer} />
 
-      <section className="right-rail glass">
-        <div className="panel-title"><RotateCcw size={18}/> QRAG LOOP</div>
-        <div className="qrag">
-          {qrag.map((step) => <div key={step.key} className={`qrag-step ${activeStep === step.key ? 'active' : ''}`}><span>{step.label}</span></div>)}
-        </div>
-        <div className="divider" />
-        <div className="panel-title"><Cpu size={18}/> DENSE FEEDBACK → QUANTIZATION TORQUE</div>
-        <div className="torque-row">
-          <div className="torque-card increase"><strong>INCREASE</strong><span>deepen / scale intelligence</span></div>
-          <div className="torque-card decrease"><strong>DECREASE</strong><span>reduce waste / drift</span></div>
-          <div className="torque-card redirect"><strong>REDIRECT</strong><span>change method / route</span></div>
-        </div>
-        <div className="divider" />
-        <div className="receipt-row">
-          <div><FileCheck2 size={18}/><strong>Receipt</strong><span>tools · evidence · result · cost</span></div>
-          <div><ShieldCheck size={18}/><strong>Audit</strong><span>trace · replay · policy · review</span></div>
-        </div>
-      </section>
+    <section className="world-card world-copy-card">
+      <div className="eyebrow">{current.code}</div>
+      <h1>{current.title}</h1>
+      <p>{current.body}</p>
+      <strong className="tags">{current.tags}</strong>
+      <div className="demo-meta">{mode === 'live' ? 'ASTRA LIVE' : 'DEMO'} · NEURO BUILDS · zoom {selectedLayer === 'CITY' ? '0.80' : selectedLayer === 'WORLD_GRID' ? '0.35' : '0.23'}</div>
+      <button className="primary-action" onClick={() => onSelectLayer(selectedLayer === 'WORLDQ' ? 'GLOBE' : 'WORLDQ')}>{current.action}</button>
+      <button className="secondary-action" onClick={() => onSelectLayer('CITY')}>ENTER AGENTROPOLIS</button>
+    </section>
 
-      <section className="event-log glass">
-        <div className="panel-title"><Activity size={17}/> LIVE EXECUTION TRACE</div>
-        <div className="event-stream">
-          {events.slice(-8).reverse().map((evt) => (
-            <div key={evt.id} className="event-row">
-              <time>{new Date(evt.ts).toLocaleTimeString([], { hour12: false })}</time>
-              <span className={`event-kind ${evt.kind.replaceAll('.', '-')}`}>{evt.kind}</span>
-              <span className="event-summary">{evt.summary}</span>
-              {evt.tool && <span className="chip">{evt.tool}</span>}
-              {evt.receiptId && <span className="chip receipt">{evt.receiptId}</span>}
-            </div>
-          ))}
-        </div>
-      </section>
+    <aside className="world-card system-hud">
+      <div className="hud-head"><span>HUD</span><b>{layers.find((l) => l.key === selectedLayer)?.n}</b><span>· {selectedLayer.replace('_', ' ')}</span><em>{mode === 'live' ? 'ASTRA LIVE' : 'DEMO'}</em></div>
+      <h2>{current.title}</h2>
+      <div className="telemetry">District {selectedLayer === 'CITY' ? 'mission' : '--'} · Mission {latest?.kind ?? '--'} · Agents {metrics.activeAgents}</div>
+      <div className="telemetry">Runtime {mode === 'live' ? 'ASTRA' : 'DEMO'} · tokens {totalTokens.toLocaleString()} · drift low · entropy contained</div>
+      <div className="permission">Permission APPROVAL REQUIRED · risk HIGH</div>
+      <div className="corridor">IDENTITY <b>MANDATE</b> PLAN POLICY EXECUTE RECEIPT AUDIT</div>
+      <div className="qrag-live">QRAG · {latest?.qragStep?.toUpperCase() ?? 'OBSERVE'} · {latest?.summary ?? 'No object selected. Execute remains gated.'}</div>
+      <div className="mini-metrics"><span><b>{metrics.runningTasks}</b> TASKS</span><span><b>{(metrics.verifiedRate * 100).toFixed(0)}%</b> VERIFIED</span><span><b>${totalCost.toFixed(3)}</b> COST</span></div>
+      <button className="kill-switch"><ShieldCheck size={17}/> KILL SWITCH · {mode === 'live' ? 'ARMED' : 'DEMO'}</button>
+    </aside>
 
-      <div className="judge-callout glass">
-        <CircleDollarSign size={16}/><span>Agents act. Humans govern. Every consequential execution ends in evidence.</span>
-      </div>
-    </div>
-  );
+    <section className="trace-strip">
+      <div className="trace-title"><Activity size={14}/> EXECUTION TRACE</div>
+      {events.slice(-4).reverse().map((evt) => <div className="trace-event" key={evt.id}><time>{new Date(evt.ts).toLocaleTimeString([], { hour12: false })}</time><b>{evt.kind}</b><span>{evt.summary}</span></div>)}
+    </section>
+
+    <div className={`stream-pill ${mode}`}><Radio size={14}/>{mode === 'live' ? 'ASTRA LIVE STREAM' : 'WORLDQ DEMO STREAM'}</div>
+  </div>;
 }
