@@ -4,6 +4,7 @@ import { Suspense, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import type { ExecutionEvent, WorldLayer } from '../lib/types';
 import { demoAgents } from '../lib/demo';
+import { DistrictImageSphere } from './DistrictImageSphere';
 
 const CYAN = '#35f0df';
 const RED = '#ff334d';
@@ -169,6 +170,7 @@ function Scene({ events, selectedLayer }: { events: ExecutionEvent[]; selectedLa
     <GlobeShell selectedLayer={selectedLayer} />
     <OrbitRings selectedLayer={selectedLayer} />
     <RegionLabels selectedLayer={selectedLayer} />
+    <DistrictImageSphere active={selectedLayer === 'GLOBE'} />
     <CityNodes selectedLayer={selectedLayer} />
     <AgentTraffic events={events} />
     <WorldQPulse selectedLayer={selectedLayer} events={events} />
