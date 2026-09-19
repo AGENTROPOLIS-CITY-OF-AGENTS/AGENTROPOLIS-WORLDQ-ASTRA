@@ -33,8 +33,13 @@ function svgImage(code: string, name: string, accent: string): string {
 const raw = [
   ['base', 'BASE', 'Identity Plaza', '#ff3d67', 'B'],
   ['parallax', 'PARALLAX', 'Open protocols / WebMCP', '#35f0df', 'P'],
-  ['atg-mcp', 'ATG MCP', 'Agent language + protocol district', '#7b61ff', 'ATG'],
+  ['atg', 'ATG', 'Atralith agentic language', '#7b61ff', 'ATG'],
+  ['agent-mcp', 'AGENT MCP', 'Agent tool + protocol connectivity', '#4fe3ff', 'MCP'],
   ['hermes-city', 'HERMES CITY', 'Coordination district', '#5b7cff', 'HC'],
+  ['worldq-astra', 'WORLDQ / ASTRA', 'Execution + intelligence district', '#ff334d', 'WQ'],
+  ['aquaduct', 'AQUADUCT', 'Infrastructure + routing district', '#2adbcf', 'AQ'],
+  ['gaming', 'GAMING', 'Interactive worlds + game systems', '#ff7a32', 'GAME'],
+  ['fashion', 'FASHION', 'Wearables + digital fashion district', '#ff4fb8', 'FX'],
   ['creator-core', 'CREATOR CORE', 'Creator + construction district', '#ff9d3d', 'CC'],
   ['docking', 'DOCKING DISTRICT', 'External worlds + docked projects', '#1ee4ff', 'DOCK', ['ARUBIK WORLD']],
 ] as const;
